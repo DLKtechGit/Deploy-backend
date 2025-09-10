@@ -35,7 +35,9 @@ app.use(express.json());
 app.use('/api',root);
 app.use(cookieParser());
 
-
+app.get('/', (req, res) => {
+  res.send('Hello root node');
+});
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
