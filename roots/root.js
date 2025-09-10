@@ -39,6 +39,7 @@ const {
   creatorFeedUpload,
   creatorFeedDelete,
   getCreatorFeeds,
+  getCreatorPost,
   creatorFeedScheduleUpload,
 } = require('../controllers/feedControllers/creatorFeedController');
 
@@ -252,10 +253,11 @@ router.post('/user/profile/detail/update',auth,upload.single('file'), userProfil
 router.get('/get/profile/detail',auth,getUserProfileDetail);
 
 /* --------------------- Creator Feed API --------------------- */
-router.post("/creator/feed/upload", upload.single('file'), creatorFeedUpload);
+router.post("/creator/feed/upload",auth, upload.single('file'), creatorFeedUpload);
 router.post("/creator/feed/schedule", auth, upload.single('file'), creatorFeedScheduleUpload);
 router.delete('/creator/delete/feeds', auth, creatorFeedDelete);
 router.get('/creator/getall/feeds', auth, getCreatorFeeds);
+router.get('/creator/get/post',auth,getCreatorPost)
 router.get('/creator/get/feed/category', getAllCategories);
 router.get('/get/all/feed/for/Creator',auth,getFeedsByAccountId)
 
@@ -333,7 +335,7 @@ router.post('/admin/feed', upload.array('file'),auth,childAdminFeedUpload);
 // router.post('/feeds/watchedbyuser', feedsWatchByUser);
 
 /* --------------------- Tags API --------------------- */
-router.get('/all/catagories', getContentCategories);
+router.get('/get/content/catagories', getContentCategories);
 router.get('/all/catagories/:id', getCategoryWithId);
 
 

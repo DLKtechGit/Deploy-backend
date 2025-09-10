@@ -24,7 +24,7 @@ exports.creatorFeedUpload = async (req, res) => {
       return res.status(403).json({ message: "Only Creators can upload feeds" });
     }
 
-    console.log("req.file",req.file)
+    
 
 
     if (!accountId) {
@@ -43,6 +43,7 @@ exports.creatorFeedUpload = async (req, res) => {
       return res.status(400).json({ message: "Language, category, and type are required" });
     }
 
+    console.log({ language, category, type })
     // Capitalize first letter of category
     const formattedCategory = category.charAt(0).toUpperCase() + category.slice(1).toLowerCase();
 
@@ -185,7 +186,7 @@ exports.getCreatorFeeds = async (req, res) => {
     if (!accountId) {
       return res.status(400).json({ message: "User ID is required" });
     }
-
+ 
     const activeAccount = await getActiveCreatorAccount(accountId);
     if (!activeAccount) {
       return res
@@ -193,20 +194,20 @@ exports.getCreatorFeeds = async (req, res) => {
         .json({ message: "Only active Creator account can fetch feeds" });
     }
     const creatorId = activeAccount._id;
-
+ 
     // ✅ Fetch feeds created by this creator account
     const feeds = await Feed.find({ createdByAccount: creatorId }).sort({ createdAt: -1 });
-
+ 
     if (!feeds || feeds.length === 0) {
       return res.status(404).json({ message: "No feeds found for this creator" });
     }
-
+ 
     // ✅ Add timeAgo property
     const feedsWithTimeAgo = feeds.map((feed) => ({
       ...feed.toObject(),
       timeAgo: feedTimeCalculator(feed.createdAt),
     }));
-
+ 
     return res.status(200).json({
       message: "Creator feeds retrieved successfully",
       count: feedsWithTimeAgo.length,
@@ -217,7 +218,71 @@ exports.getCreatorFeeds = async (req, res) => {
     return res.status(500).json({ message: "Server error", error });
   }
 };
-
+ 
+ 
+exports.getCreatorPost = async (req, res) => {
+  try {
+    const accountId = req.accountId || req.body.accountId;
+    console.log(accountId)
+    if (!accountId) {
+      return res.status(400).json({ message: "Account ID is required" });
+    }
+ 
+    // ✅ Fetch account
+    const account = await Account.findById(accountId).lean();
+    if (!account) {
+      return res.status(400).json({ message: "Account not found" });
+    }
+ 
+    // ✅ Ensure active creator account
+    const activeAccount = await getActiveCreatorAccount(account.userId);
+    if (!activeAccount) {
+      return res.status(403).json({
+        message: "Only active Creator account can fetch feeds",
+      });
+    }
+ 
+    const creatorId = activeAccount._id;
+ 
+    // ✅ Run queries in parallel (feeds + count)
+    const [feeds, feedCount] = await Promise.all([
+      Feed.find(
+        { createdByAccount: creatorId },
+        { contentUrl: 1, createdAt: 1 }
+      )
+        .sort({ createdAt: -1 })
+        .lean(),
+      Feed.countDocuments({ createdByAccount: creatorId })
+    ]);
+ 
+    if (!feeds || feeds.length === 0) {
+      return res.status(404).json({
+        message: "No feeds found for this creator",
+        feedCount: 0,
+        feeds: [],
+      });
+    }
+ 
+    const host = `${req.protocol}://${req.get("host")}`;
+    const feedsFormatted = feeds.map(feed => ({
+      feedId: feed._id,
+      contentUrl: `${host}/${feed.contentUrl}`,
+      timeAgo: feedTimeCalculator(feed.createdAt),
+    }));
+ 
+    return res.status(200).json({
+      message: "Creator feeds retrieved successfully",
+      feedCount, // ✅ optimized with countDocuments
+      feeds: feedsFormatted,
+    });
+ 
+  } catch (error) {
+    console.error("Error fetching creator feeds:", error);
+    return res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+ 
+ 
 
 
 

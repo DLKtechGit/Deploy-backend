@@ -9,6 +9,7 @@ const CommentLike = require("../../models/userModels/commentsLikeModel.js");
 exports.likeFeed = async (req, res) => {
   const userId = req.Id || req.body.userId;
   const feedId = req.body.feedId;
+  console.log("user",userId,"feed",feedId)
 
   if (!userId || !feedId) return res.status(400).json({ message: "userId and feedId required" });
 
@@ -20,6 +21,7 @@ exports.likeFeed = async (req, res) => {
     );
 
     const isLiked = result.likedFeeds.includes(feedId);
+    
 
     res.status(200).json({
       message: isLiked ? "Liked successfully" : "Already liked",
@@ -202,7 +204,7 @@ exports.getUserSavedFeeds = async (req, res) => {
     // Map to only URLs
     const savedFeedUrls = userActions.savedFeeds.map(feed => {
       const folder = feed.type === "video" ? "videos" : "images";
-      return feed.downloadUrl || feed.fileUrl || (feed.contentUrl ? `http://192.168.1.48:5000/uploads/${folder}/${path.basename(feed.contentUrl)}` : null);
+      return feed.downloadUrl || feed.fileUrl || (feed.contentUrl ? `http://192.168.1.77:5000/uploads/${folder}/${path.basename(feed.contentUrl)}` : null);
     }).filter(Boolean); // remove nulls
 
     res.status(200).json({
@@ -231,7 +233,7 @@ exports.getUserDownloadedFeeds = async (req, res) => {
 
     const downloadedFeedUrls = userActions.downloadedFeeds.map(feed => {
       const folder = feed.type === "video" ? "videos" : "images";
-      return feed.downloadUrl || feed.fileUrl || (feed.contentUrl ? `http://192.168.1.48:5000/uploads/${folder}/${path.basename(feed.contentUrl)}` : null);
+      return feed.downloadUrl || feed.fileUrl || (feed.contentUrl ? `http://192.168.1.77:5000/uploads/${folder}/${path.basename(feed.contentUrl)}` : null);
     }).filter(Boolean);
 
     res.status(200).json({
@@ -261,7 +263,7 @@ exports.getUserLikedFeeds = async (req, res) => {
 
     const likedFeedUrls = userActions.likedFeeds.map(feed => {
       const folder = feed.type === "video" ? "videos" : "images";
-      return feed.downloadUrl || feed.fileUrl || (feed.contentUrl ? `http://192.168.1.48:5000/uploads/${folder}/${path.basename(feed.contentUrl)}` : null);
+      return feed.downloadUrl || feed.fileUrl || (feed.contentUrl ? `http://192.168.1.77:5000/uploads/${folder}/${path.basename(feed.contentUrl)}` : null);
     }).filter(Boolean);
 
     res.status(200).json({

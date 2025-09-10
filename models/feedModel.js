@@ -16,7 +16,7 @@ const feedSchema = new mongoose.Schema({
 
   roleRef: {
     type: String,
-    enum: [ "Admin","Account","Child_Admin"],
+    enum: [ "Admin","Account","Child_Admin","Creator"],
     required: true,
     default: "Account"
   },
